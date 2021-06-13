@@ -1,10 +1,10 @@
-import App from './App.svelte';
+import Scene from './Scene.svelte';
 
-const app = new App({
+import level01 from './levels/01-intro.js';
+
+export default new Scene({
 	target: document.body,
 	props: {
-		name: 'world'
-	}
+		level: level01,
+	},
 });
-
-export default app;
