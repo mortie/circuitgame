@@ -1,10 +1,5 @@
-import Scene from './Scene.svelte';
+import Router from './Router.svelte';
 
-import level01 from './levels/01-intro.js';
-
-export default new Scene({
+export default new Router({
 	target: document.body,
-	props: {
-		level: level01,
-	},
 });

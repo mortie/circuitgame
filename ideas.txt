@@ -1,0 +1,10 @@
+# Puzzle Series Ideas
+
+* Morse code decoder
+	* Decode morse code into ASCII
+	* Write ASCII to printer
+* CPU
+	* ALU
+	* Registers
+	* Control logic
+	* ???
