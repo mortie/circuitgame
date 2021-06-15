@@ -143,13 +143,18 @@
 		}
 
 		onKeyDown(key) {
-			let responded = true;
 			if (key == "Escape" || key == "q") {
 				this.tooltip = null;
 				this.selectedNodes = [];
 				this.mouseMoveStart = null;
 				this.currentLink = null;
 				this.selection = null;
+
+				if (this.cursorAttachedNode != null) {
+					this.deleteNode(this.cursorAttachedNode);
+					this.cursorAttachedNode = null;
+				}
+
 				this.requestFrame();
 			} else if (key == "Delete") {
 				for (let node of this.selectedNodes) {
@@ -163,12 +168,6 @@
 						this.requestFrame();
 					}
 				}
-			} else {
-				responded = false;
-			}
-
-			if (responded) {
-				evt.preventDefault();
 			}
 		}
 
