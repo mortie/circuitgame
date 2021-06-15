@@ -1,7 +1,10 @@
 <main>
 	<h1>Game</h1>
 
-	<a on:click={play} href="#/play">Start</a>
+	<ul>
+		<li><a on:click={play} href="#/play">Start</a></li>
+		<li><a href="#/sandbox">Sandbox Mode</a></li>
+	</ul>
 </main>
 
 <style>
@@ -11,7 +14,7 @@
 	}
 
 	a {
-		color: #aaa;
+		color: #ccc;
 	}
 </style>
 

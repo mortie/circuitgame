@@ -6,6 +6,10 @@ export default {
 	outputs: [
 		"LED",
 	],
+	components: [
+		"Input",
+		"NotGate",
+	],
 
 	tests: [
 		[false], [false],

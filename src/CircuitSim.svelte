@@ -1,177 +1,39 @@
-<canvas bind:this={canvas}></canvas>
+<main>
+	<canvas bind:this={canvas}></canvas>
+	<div class="controls">
+		{#each components as comp}
+			<button on:click={sim.addNodeAtCursor(new comp.ctor())}>{comp.name}</button>
+		{/each}
+	</div>
+</main>
 
 <style>
-	canvas {
+	main, canvas {
 		width: 100vw;
 		height: 100vh;
 		position: absolute;
 		top: 0px;
 		left: 0px;
 	}
+
+	.controls {
+		position: absolute;
+		bottom: 0px;
+		left: 0px;
+		width: 100%;
+		height: 40px;
+	}
+
+	.controls > * {
+		box-sizing: border-box;
+		height: 100%;
+	}
 </style>
 
 <script>
-	import {onMount} from 'svelte';
+	import {onMount, onDestroy} from 'svelte';
 
-	class Link {
-		constructor(from, index) {
-			this.from = from;
-			this.index = index;
-			this.current = false;
-			this.next = false;
-
-			this.connections = [];
-		}
-
-		connect(node, index) {
-			node.inputs[index].links.push(this);
-			this.connections.push({node, index});
-		}
-
-		disconnect(node, index) {
-			for (let i = this.connections.length - 1; i >= 0; --i) {
-				let conn = this.connections[i];
-				if (conn.node == node && conn.index == index) {
-					this.connections.splice(i, 1);
-				}
-			}
-		}
-
-		destroy() {
-			for (let conn of this.connections) {
-				for (let i = conn.node.inputs[conn.index].links.length - 1; i >= 0; --i) {
-					if (conn.node.inputs[conn.index].links[i] == this) {
-						conn.node.inputs[conn.index].links.splice(i, 1);
-					}
-				}
-			}
-		}
-
-		commit() {
-			this.current = this.next;
-		}
-	}
-
-	class Input {
-		constructor(x, y) {
-			this.name = "IN";
-			this.x = x;
-			this.y = y;
-			this.inputs = [];
-			this.outputs = [{name: "Out", link: new Link(this, 0)}];
-
-			this.width = 3;
-			this.height = 1;
-
-			this.lit = false;
-		}
-
-		activate() {
-			this.lit = !this.lit;
-		}
-
-		tick() {
-			if (this.lit) {
-				this.outputs[0].link.next = true;
-			} else {
-				this.outputs[0].link.next = false;
-			}
-		}
-
-		commit() {
-			this.outputs[0].link.commit();
-		}
-	}
-
-	class NotGate {
-		constructor(x, y) {
-			this.name = "NOT";
-			this.x = x;
-			this.y = y;
-			this.inputs = [{name: "In", links: []}];
-			this.outputs = [{name: "Out", link: new Link(this, 0)}];
-
-			this.width = 4;
-			this.height = 1;
-
-			this.lit = false;
-		}
-
-		tick() {
-			this.outputs[0].link.next = true;
-			for (let link of this.inputs[0].links) {
-				if (link.current) {
-					this.outputs[0].link.next = false;
-					break;
-				}
-			}
-		}
-
-		commit() {
-			this.outputs[0].link.commit();
-			this.lit = this.outputs[0].link.current;
-		}
-	}
-
-	class Diode {
-		constructor(x, y) {
-			this.name = "DIODE";
-			this.x = x;
-			this.y = y;
-			this.inputs = [{name: "In", links: []}];
-			this.outputs = [{name: "Out", link: new Link(this, 0)}];
-
-			this.width = 4;
-			this.height = 1;
-
-			this.lit = false;
-		}
-
-		tick() {
-			this.outputs[0].link.next = false;
-			for (let link of this.inputs[0].links) {
-				if (link.current) {
-					this.outputs[0].link.next = true;
-					break;
-				}
-			}
-		}
-
-		commit() {
-			this.outputs[0].link.commit();
-			this.lit = this.outputs[0].link.current;
-		}
-	}
-
-	class Lamp {
-		constructor(x, y) {
-			this.name = "LAMP";
-			this.x = x;
-			this.y = y;
-			this.inputs = [{name: "In", links: []}];
-			this.outputs = [];
-
-			this.width = 4;
-			this.height = 1;
-
-			this.lit = false;
-			this.nextLit = false;
-		}
-
-		tick() {
-			this.nextLit = false;
-			for (let link of this.inputs[0].links) {
-				if (link.current) {
-					this.nextLit = true;
-					break;
-				}
-			}
-		}
-
-		commit() {
-			this.lit = this.nextLit;
-		}
-	}
+	export let components;
 
 	class LogicSim {
 		constructor(can) {
@@ -184,12 +46,15 @@
 			this.currentTouch = null;
 			this.x = 0;
 			this.y = 0;
+			this.cursorX = 0;
+			this.cursorY = 0;
 
 			this.tooltip = null;
 			this.selectedNodes = [];
 			this.mouseMoveStart = null;
 			this.currentLink = null;
 			this.selection = null;
+			this.cursorAttachedNode;
 
 			this.requestFrame();
 
@@ -379,6 +244,9 @@
 
 		onMouseMove(offsetX, offsetY, movementX, movementY, buttons) {
 			let [x, y] = this.coordsFromScreenPos(offsetX, offsetY);
+			this.cursorX = x;
+			this.cursorY = y;
+
 			let dx = 0, dy = 0;
 			if (this.mouseMoveStart) {
 				dx = x - this.mouseMoveStart.x;
@@ -442,6 +310,17 @@
 				p.y = y;
 				this.requestFrame();
 			}
+
+			if (this.cursorAttachedNode != null) {
+				let node = this.cursorAttachedNode;
+				let newX = Math.round(x - node.width / 2);
+				let newY = Math.round(y - node.height / 2);
+				if (newX != node.x || newY != node.y) {
+					node.x = newX;
+					node.y = newY;
+					this.requestFrame();
+				}
+			}
 		}
 
 		onClick(offsetX, offsetY) {
@@ -450,6 +329,15 @@
 			}
 
 			let [x, y] = this.coordsFromScreenPos(offsetX, offsetY);
+
+			if (this.cursorAttachedNode != null) {
+				let node = this.cursorAttachedNode;
+				node.x = Math.round(x - node.width / 2);
+				node.y = Math.round(y - node.height / 2);
+				this.cursorAttachedNode = null;
+				return;
+			}
+
 			let node = this.getNodeAt(x, y);
 			let io = null;
 			if (node != null) {
@@ -562,9 +450,10 @@
 		}
 
 		addNodeAtCursor(node) {
-			node.x = Math.round(this.x);
-			node.y = Math.round(this.y);
+			node.x = Math.round(this.cursorX - node.width / 2);
+			node.y = Math.round(this.cursorY - node.height / 2);
 			this.nodes.push(node);
+			this.cursorAttachedNode = node;
 			this.requestFrame();
 		}
 
@@ -741,8 +630,17 @@
 
 	let canvas;
 	let sim;
+	let interval = null;
 
 	onMount(() => {
 		sim = new LogicSim(canvas);
+		interval = setInterval(sim.update.bind(sim), 100);
+	});
+
+	onDestroy(() => {
+		if (interval != null) {
+			clearInterval(interval);
+			interval = null;
+		}
 	});
 </script>

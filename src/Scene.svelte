@@ -19,7 +19,7 @@
 			<button on:click={begin}>Skip</button>
 		</div>
 	{:else}
-		<CircuitSim />
+		<CircuitSim components={components} />
 	{/if}
 </main>
 
@@ -47,6 +47,14 @@
 	export let level;
 
 	import CircuitSim from './CircuitSim.svelte';
+	import * as availableComponents from './circuit-components.js';
+
+	let components = level.components.map(name => {
+		if (availableComponents[name] == null) {
+			throw new Error(name, "is not a valid component name");
+		}
+		return {name, ctor: availableComponents[name]};
+	});
 
 	let page = 0;
 	let showIntro = true;

@@ -5,10 +5,12 @@
 <script>
 	import MainMenu from "./MainMenu.svelte";
 	import SceneSelector from "./SceneSelector.svelte";
+	import Sandbox from "./Sandbox.svelte";
 
 	let routes = {
 		"/": MainMenu,
 		"/play": SceneSelector,
+		"/sandbox": Sandbox,
 	};
 
 	let element = null;
