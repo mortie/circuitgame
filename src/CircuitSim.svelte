@@ -313,7 +313,7 @@
 			if (this.cursorAttachedNode != null) {
 				let node = this.cursorAttachedNode;
 				let newX = Math.round(x - node.width / 2);
-				let newY = Math.round(y - node.height / 2);
+				let newY = Math.round(y - node.height / 2 + 0.5);
 				if (newX != node.x || newY != node.y) {
 					node.x = newX;
 					node.y = newY;
@@ -332,7 +332,7 @@
 			if (this.cursorAttachedNode != null) {
 				let node = this.cursorAttachedNode;
 				node.x = Math.round(x - node.width / 2);
-				node.y = Math.round(y - node.height / 2);
+				node.y = Math.round(y - node.height / 2 + 0.5);
 				this.cursorAttachedNode = null;
 				return;
 			}
@@ -450,7 +450,7 @@
 
 		addNodeAtCursor(node) {
 			node.x = Math.round(this.cursorX - node.width / 2);
-			node.y = Math.round(this.cursorY - node.height / 2);
+			node.y = Math.round(this.cursorY - node.height / 2 + 0.5);
 			this.nodes.push(node);
 			this.cursorAttachedNode = node;
 			this.requestFrame();
