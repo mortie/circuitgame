@@ -34,6 +34,7 @@
 	import {onMount, onDestroy} from 'svelte';
 
 	export let components;
+	export let nodes = [];
 
 	class LogicSim {
 		constructor(can) {
@@ -633,6 +634,10 @@
 
 	onMount(() => {
 		sim = new LogicSim(canvas);
+		for (let node of nodes) {
+			sim.nodes.push(node);
+		}
+
 		interval = setInterval(sim.update.bind(sim), 100);
 	});
 

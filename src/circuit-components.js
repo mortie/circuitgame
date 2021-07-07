@@ -38,8 +38,69 @@ export class Link {
 }
 
 export class Input {
+	constructor(x, y, name) {
+		this.name = name || "Input";
+		this.x = x;
+		this.y = y;
+		this.inputs = [];
+		this.outputs = [{name: "Input", link: new Link(this, 0)}];
+
+		this.width = 4;
+		this.height = 1;
+
+		this.lit = false;
+	}
+
+	activate() {
+		this.lit = !this.lit;
+	}
+
+	tick() {
+		if (this.lit) {
+			this.outputs[0].link.next = true;
+		} else {
+			this.outputs[0].link.next = false;
+		}
+	}
+
+	commit() {
+		this.outputs[0].link.commit();
+	}
+}
+
+export class Output {
+	constructor(x, y, name) {
+		this.name = name || "Output";
+		this.x = x;
+		this.y = y;
+		this.inputs = [{name: "Output", links: []}];
+		this.outputs = [];
+
+		this.width = 4;
+		this.height = 1;
+
+		this.lit = false;
+		this.nextLit = false;
+	}
+
+	tick() {
+		this.nextLit = false;
+		for (let link of this.inputs[0].links) {
+			if (link.current) {
+				this.nextLit = true;
+				break;
+			}
+		}
+	}
+
+	commit() {
+		this.lit = this.nextLit;
+	}
+}
+
+export class Switch {
 	constructor(x, y) {
-		this.name = "IN";
+		this.name = "OFF";
 		this.x = x;
 		this.y = y;
 		this.inputs = [];
@@ -53,6 +114,7 @@ export class Input {
 
 	activate() {
 		this.lit = !this.lit;
+		this.name = this.lit ? "ON" : "OFF";
 	}
 
 	tick() {

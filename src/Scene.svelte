@@ -16,10 +16,10 @@
 			{:else}
 				<button on:click={begin}>Begin</button>
 			{/if}
-			<button on:click={begin}>Skip</button>
+			<button on:click={begin} disabled={page == level.pages.length - 1}>Skip</button>
 		</div>
 	{:else}
-		<CircuitSim components={components} />
+		<CircuitSim components={components} nodes={nodes} />
 	{/if}
 </main>
 
@@ -55,6 +55,19 @@
 		}
 		return {name, ctor: availableComponents[name]};
 	});
+
+	let nodes = [];
+	let y = 0;
+	for (let name of level.inputs) {
+		nodes.push(new availableComponents.Input(-4, y, name));
+		y += 2;
+	}
+
+	y = 0;
+	for (let name of level.outputs) {
+		nodes.push(new availableComponents.Output(4, y, name));
+		y += 2;
+	}
 
 	let page = 0;
 	let showIntro = true;

@@ -7,7 +7,7 @@ export default {
 		"LED",
 	],
 	components: [
-		"Input",
+		"Switch",
 		"NotGate",
 	],
 

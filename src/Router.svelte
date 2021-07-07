@@ -23,6 +23,8 @@
 		if (path[0] != "/") {
 			console.error("Illegal path:", path);
 			path = "/";
+		} else if (path == "") {
+			path = "/";
 		}
 
 		let parts = path.split("/").filter(el => el != "");
