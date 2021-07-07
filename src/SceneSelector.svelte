@@ -4,7 +4,13 @@
 
 <script>
 	import Scene from './Scene.svelte';
-	import level01 from './levels/01-intro.js';
+	import * as levels from "./levels.js";
 
-	let level = level01;
+	export let levelId = "001";
+
+	let level = levels["level" + levelId];
+	if (level == null) {
+		console.warn("Unknown level ID:", levelId);
+		level = levels["level001"];
+	}
 </script>

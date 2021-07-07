@@ -2,7 +2,7 @@
 	<h1>Game</h1>
 
 	<ul>
-		<li><a on:click={play} href="#/play">Start</a></li>
+		<li><a on:click={play} href="#/play">Story Mode</a></li>
 		<li><a href="#/sandbox">Sandbox Mode</a></li>
 	</ul>
 </main>

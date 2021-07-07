@@ -472,7 +472,7 @@
 			this.ctx.scale(this.scale * pixelRatio, this.scale * pixelRatio);
 			this.ctx.translate(-this.x, -this.y);
 
-			this.ctx.strokeStyle = "rgba(0, 0, 0, 0.2)";
+			this.ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
 			this.ctx.lineWidth = 1 / this.scale;
 
 			let gridStartX = Math.floor(this.x - canWidth / 2);
@@ -514,8 +514,8 @@
 				}
 			}
 
-			this.ctx.strokeStyle = "black";
-			this.ctx.lineWidth = 0.1;
+			this.ctx.strokeStyle = "rgba(255, 255, 255, 1)";
+			this.ctx.lineWidth = 0.05;
 			this.ctx.setLineDash([0.2, 0.1]);
 			for (let node of this.selectedNodes) {
 				this.ctx.beginPath();
@@ -562,7 +562,7 @@
 			}
 
 			if (this.currentLink != null) {
-				this.ctx.strokeStyle = "black";
+				this.ctx.strokeStyle = "brown";
 
 				let from = this.currentLink.from;
 				let fromX = from.node.x;
