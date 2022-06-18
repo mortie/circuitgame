@@ -59,13 +59,17 @@
 	let nodes = [];
 	let y = 0;
 	for (let name of level.inputs) {
-		nodes.push(new availableComponents.Input(-4, y, name));
+		let n = new availableComponents.Input(-4, y, name);
+		n.protected = true;
+		nodes.push(n);
 		y += 2;
 	}
 
 	y = 0;
 	for (let name of level.outputs) {
-		nodes.push(new availableComponents.Output(4, y, name));
+		let n = new availableComponents.Output(4, y, name);
+		n.protected = true;
+		nodes.push(n);
 		y += 2;
 	}
 

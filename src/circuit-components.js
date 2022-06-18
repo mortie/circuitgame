@@ -8,9 +8,9 @@ export class Link {
 		this.connections = [];
 	}
 
-	connect(node, index) {
+	connect(node, index, path) {
 		node.inputs[index].links.push(this);
-		this.connections.push({node, index});
+		this.connections.push({node, index, path});
 	}
 
 	disconnect(node, index) {
@@ -40,6 +40,7 @@ export class Link {
 export class Input {
 	constructor(x, y, name) {
 		this.name = name || "Input";
+		this.protected = false;
 		this.x = x;
 		this.y = y;
 		this.inputs = [];
@@ -71,6 +72,7 @@ export class Input {
 export class Output {
 	constructor(x, y, name) {
 		this.name = name || "Output";
+		this.protected = false;
 		this.x = x;
 		this.y = y;
 		this.inputs = [{name: "Output", links: []}];
@@ -101,6 +103,7 @@ export class Output {
 export class Switch {
 	constructor(x, y) {
 		this.name = "OFF";
+		this.protected = false;
 		this.x = x;
 		this.y = y;
 		this.inputs = [];
@@ -133,6 +136,7 @@ export class Switch {
 export class NotGate {
 	constructor(x, y) {
 		this.name = "NOT";
+		this.protected = false;
 		this.x = x;
 		this.y = y;
 		this.inputs = [{name: "In", links: []}];
@@ -163,6 +167,7 @@ export class NotGate {
 export class Diode {
 	constructor(x, y) {
 		this.name = "DIODE";
+		this.protected = false;
 		this.x = x;
 		this.y = y;
 		this.inputs = [{name: "In", links: []}];
@@ -193,6 +198,7 @@ export class Diode {
 export class Lamp {
 	constructor(x, y) {
 		this.name = "LAMP";
+		this.protected = false;
 		this.x = x;
 		this.y = y;
 		this.inputs = [{name: "In", links: []}];

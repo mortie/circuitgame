@@ -157,11 +157,23 @@
 				}
 
 				this.requestFrame();
-			} else if (key == "Delete") {
-				for (let node of this.selectedNodes) {
-					this.deleteNode(node);
+			} else if (this.currentLink != null && key == "Backspace") {
+				if (this.currentLink.path.length > 0) {
+					this.currentLink.path.pop();
+				} else {
+					this.currentLink = null;
 				}
-				this.selectedNodes = [];
+				this.requestFrame();
+			} else if (key == "Delete" || key == "Backspace") {
+				let newSelectedNodes = [];
+				for (let node of this.selectedNodes) {
+					if (node.protected) {
+						newSelectedNodes.push(node);
+					} else {
+						this.deleteNode(node);
+					}
+				}
+				this.selectedNodes = newSelectedNodes;
 			} else if (key == "Enter") {
 				for (let node of this.selectedNodes) {
 					if (node.activate) {
@@ -305,9 +317,6 @@
 			}
 
 			if (this.currentLink != null) {
-				let p = this.currentLink.path[this.currentLink.path.length - 1];
-				p.x = x;
-				p.y = y;
 				this.requestFrame();
 			}
 
@@ -349,9 +358,10 @@
 					let fromNode = this.currentLink.from.node;
 					let fromIO = this.currentLink.from.io;
 					if (fromIO.type == "input" && io.type == "output") {
-						io.io.link.connect(fromNode, fromIO.index);
+						this.currentLink.path.reverse();
+						io.io.link.connect(fromNode, fromIO.index, this.currentLink.path);
 					} else if (fromIO.type == "output" && io.type == "input") {
-						fromIO.io.link.connect(node, io.index);
+						fromIO.io.link.connect(node, io.index, this.currentLink.path);
 					}
 
 					if (fromIO.type != io.type) {
@@ -360,13 +370,11 @@
 					}
 				} else {
 					let path = this.currentLink.path;
-					path[path.length - 1].x = Math.round(path[path.length - 1].x);
-					path[path.length - 1].y = Math.round(path[path.length - 1].y);
-					path.push({x, y});
+					path.push({x: Math.round(x), y: Math.round(y)});
 					this.requestFrame();
 				}
 			} else if (io != null) {
-				this.currentLink = {from: {node, io}, path: [{x, y}]};
+				this.currentLink = {from: {node, io}, path: []};
 			} else {
 				if (node && node.activate) {
 					node.activate();
@@ -509,6 +517,11 @@
 					for (let conn of link.connections) {
 						this.ctx.beginPath();
 						this.ctx.moveTo(link.from.x + link.from.width, link.from.y + link.index);
+
+						for (let point of conn.path) {
+							this.ctx.lineTo(point.x, point.y);
+						}
+
 						this.ctx.lineTo(conn.node.x, conn.node.y + conn.index);
 						this.ctx.stroke();
 					}
@@ -577,6 +590,8 @@
 				for (let el of this.currentLink.path) {
 					this.ctx.lineTo(el.x, el.y);
 				}
+
+				this.ctx.lineTo(this.cursorX, this.cursorY);
 
 				this.ctx.stroke();
 			}
