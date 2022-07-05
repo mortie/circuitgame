@@ -7,8 +7,8 @@ export default {
 		"LED",
 	],
 	components: [
-		"Switch",
-		"NotGate",
+		"SwitchComponent",
+		"NotGateComponent",
 	],
 
 	tests: [

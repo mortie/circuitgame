@@ -2,7 +2,7 @@
 	<canvas bind:this={canvas}></canvas>
 	<div class="controls">
 		{#each components as comp}
-			<button on:click={sim.addNodeAtCursor(new comp.ctor())}>{comp.name}</button>
+			<button on:click={sim.addNodeAtCursor(new comp())}>{comp.label}</button>
 		{/each}
 	</div>
 </main>

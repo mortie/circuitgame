@@ -53,13 +53,13 @@
 		if (availableComponents[name] == null) {
 			throw new Error(name, "is not a valid component name");
 		}
-		return {name, ctor: availableComponents[name]};
+		return availableComponents[name];
 	});
 
 	let nodes = [];
 	let y = 0;
 	for (let name of level.inputs) {
-		let n = new availableComponents.Input(-4, y, name);
+		let n = new availableComponents.InputComponent(-4, y, name);
 		n.protected = true;
 		nodes.push(n);
 		y += 2;
@@ -67,7 +67,7 @@
 
 	y = 0;
 	for (let name of level.outputs) {
-		let n = new availableComponents.Output(4, y, name);
+		let n = new availableComponents.OutputComponent(4, y, name);
 		n.protected = true;
 		nodes.push(n);
 		y += 2;

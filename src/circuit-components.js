@@ -37,7 +37,9 @@ export class Link {
 	}
 }
 
-export class Input {
+export class InputComponent {
+	static label = "Input";
+
 	constructor(x, y, name) {
 		this.name = name || "Input";
 		this.protected = false;
@@ -69,7 +71,9 @@ export class Input {
 	}
 }
 
-export class Output {
+export class OutputComponent {
+	static label = "Output";
+
 	constructor(x, y, name) {
 		this.name = name || "Output";
 		this.protected = false;
@@ -100,7 +104,9 @@ export class Output {
 	}
 }
 
-export class Switch {
+export class SwitchComponent {
+	static label = "Switch";
+
 	constructor(x, y) {
 		this.name = "OFF";
 		this.protected = false;
@@ -133,7 +139,9 @@ export class Switch {
 	}
 }
 
-export class NotGate {
+export class NotGateComponent {
+	static label = "Not";
+
 	constructor(x, y) {
 		this.name = "NOT";
 		this.protected = false;
@@ -164,7 +172,9 @@ export class NotGate {
 	}
 }
 
-export class Diode {
+export class DiodeComponent {
+	static label = "Diode";
+
 	constructor(x, y) {
 		this.name = "DIODE";
 		this.protected = false;
@@ -195,7 +205,9 @@ export class Diode {
 	}
 }
 
-export class Lamp {
+export class LampComponent {
+	static label = "Lamp";
+
 	constructor(x, y) {
 		this.name = "LAMP";
 		this.protected = false;
