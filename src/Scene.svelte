@@ -60,6 +60,7 @@
 	let y = 0;
 	for (let name of level.inputs) {
 		let n = new availableComponents.InputComponent(-4, y, name);
+		n.x -= n.width;
 		n.protected = true;
 		nodes.push(n);
 		y += 2;
