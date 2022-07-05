@@ -500,6 +500,13 @@ export class LogicSim {
 
 					this.ctx.lineTo(conn.node.x, conn.node.y + conn.index);
 					this.ctx.stroke();
+
+					for (let point of conn.path) {
+						this.ctx.beginPath();
+						this.ctx.arc(point.x, point.y, 0.2, 0, 2 * Math.PI);
+						this.ctx.fill();
+						this.ctx.stroke();
+					}
 				}
 			}
 		}
@@ -568,8 +575,19 @@ export class LogicSim {
 			}
 
 			this.ctx.lineTo(this.cursorX, this.cursorY);
-
 			this.ctx.stroke();
+
+			this.ctx.beginPath();
+			this.ctx.arc(fromX, fromY, 0.2, 0, 2 * Math.PI);
+			this.ctx.fill();
+			this.ctx.stroke();
+
+			for (let el of this.currentLink.path) {
+				this.ctx.beginPath();
+				this.ctx.arc(el.x, el.y, 0.2, 0, 2 * Math.PI);
+				this.ctx.fill();
+				this.ctx.stroke();
+			}
 		}
 
 		if (this.tooltip != null) {
