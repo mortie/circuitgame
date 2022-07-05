@@ -19,37 +19,39 @@ export class LogicSim {
 		this.selection = null;
 		this.cursorAttachedNode;
 
+		this.listenersToDestroy = [];
+
 		this.requestFrame();
 
-		window.addEventListener("resize", () => {
+		this.addListener(window, "resize", () => {
 			this.requestFrame();
 		});
 
-		window.addEventListener("keydown", evt => {
+		this.addListener(window, "keydown", evt => {
 			this.onKeyDown(evt.key);
 		});
 
-		can.addEventListener("wheel", evt => {
+		this.addListener(can, "wheel", evt => {
 			this.onScroll(evt.deltaY / 10);
 		});
 
-		can.addEventListener("mousedown", evt => {
+		this.addListener(can, "mousedown", evt => {
 			this.onMouseDown(evt.offsetX, evt.offsetY, evt.buttons, evt);
 		});
 
-		can.addEventListener("mouseup", evt => {
+		this.addListener(can, "mouseup", evt => {
 			this.onMouseUp();
 		});
 
-		can.addEventListener("mousemove", evt => {
+		this.addListener(can, "mousemove", evt => {
 			this.onMouseMove(evt.offsetX, evt.offsetY, evt.movementX, evt.movementY, evt.buttons);
 		});
 
-		can.addEventListener("click", evt => {
+		this.addListener(can, "click", evt => {
 			this.onClick(evt.offsetX, evt.offsetY);
 		});
 
-		can.addEventListener("touchstart", evt => {
+		this.addListener(can, "touchstart", evt => {
 			if (this.currentTouch != null || evt.changedTouches.length == 0) {
 				return;
 			}
@@ -59,7 +61,7 @@ export class LogicSim {
 			this.onMouseDown(relevantTouch.clientX, relevantTouch.clientY, 1, evt);
 		});
 
-		can.addEventListener("touchend", evt => {
+		this.addListener(can, "touchend", evt => {
 			if (this.currentTouch == null) {
 				return;
 			}
@@ -80,7 +82,7 @@ export class LogicSim {
 			tis.onMouseUp();
 		});
 
-		can.addEventListener("touchmove", evt => {
+		this.addListener(can, "touchmove", evt => {
 			if (this.currentTouch == null) {
 				return;
 			}
@@ -103,6 +105,18 @@ export class LogicSim {
 
 			this.onMouseMove(relevantTouch.clientX, relevantTouch.clientY, -deltaX, -deltaY, 1);
 		});
+	}
+
+	addListener(obj, evt, fn) {
+		this.listenersToDestroy.push([obj, evt, fn]);
+		obj.addEventListener(evt, fn);
+	}
+
+	destroy() {
+		for (let [obj, evt, fn] of this.listenersToDestroy) {
+			console.log(obj, "removeEventListener", evt, fn);
+			obj.removeEventListener(evt, fn);
+		}
 	}
 
 	onKeyDown(key) {

@@ -55,5 +55,8 @@
 			clearInterval(interval);
 			interval = null;
 		}
+		if (sim != null) {
+			sim.destroy();
+		}
 	});
 </script>
