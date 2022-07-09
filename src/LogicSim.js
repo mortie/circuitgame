@@ -13,7 +13,7 @@ export class LogicSim {
 		this.cursorY = 0;
 
 		this.tooltip = null;
-		this.selectedNodes = [];
+		this.selected = [];
 		this.mouseMoveStart = null;
 		this.currentLink = null;
 		this.selection = null;
@@ -122,7 +122,7 @@ export class LogicSim {
 	onKeyDown(key) {
 		if (key == "Escape" || key == "q") {
 			this.tooltip = null;
-			this.selectedNodes = [];
+			this.selected = [];
 			this.mouseMoveStart = null;
 			this.currentLink = null;
 			this.selection = null;
@@ -141,19 +141,19 @@ export class LogicSim {
 			}
 			this.requestFrame();
 		} else if (key == "Delete" || key == "Backspace") {
-			let newSelectedNodes = [];
-			for (let node of this.selectedNodes) {
-				if (node.protected) {
-					newSelectedNodes.push(node);
+			let newSelected = [];
+			for (let sel of this.selected) {
+				if (sel.node && sel.node.protected) {
+					newSelected.push(sel);
 				} else {
-					this.deleteNode(node);
+					this.deleteSelectable(sel);
 				}
 			}
-			this.selectedNodes = newSelectedNodes;
+			this.selected = newSelected;
 		} else if (key == "Enter") {
-			for (let node of this.selectedNodes) {
-				if (node.activate) {
-					node.activate();
+			for (let sel of this.selected) {
+				if (sel.node && node.activate) {
+					sel.node.activate();
 					this.requestFrame();
 				}
 			}
@@ -174,21 +174,21 @@ export class LogicSim {
 	onMouseDown(offsetX, offsetY, buttons, keys) {
 		this.clickCancelled = false;
 		let [x, y] = this.coordsFromScreenPos(offsetX, offsetY);
-		let node = this.getNodeAt(x, y);
-		this.mouseMoveStart = {x, y, node};
+		let sel = this.getSelectableAt(x, y);
+		this.mouseMoveStart = {x, y, sel};
 
 		if (keys.shiftKey && buttons == 1) {
-			this.selectedNodes = [];
+			this.selected = [];
 			this.selection = {fromX: x, fromY: y, toX: x, toY: y};
 			this.tooltip = null;
 			this.requestFrame();
-		} else if (node != null && buttons == 1) {
-			if (this.selectedNodes.indexOf(node) == -1) {
-				this.selectedNodes = [node];
+		} else if (sel != null && buttons == 1) {
+			if (this.selected.indexOf(sel) == -1) {
+				this.selected = [sel];
 				this.requestFrame();
 			}
 		} else if (buttons == 1) {
-			this.selectedNodes = [];
+			this.selected = [];
 			this.requestFrame();
 		}
 	}
@@ -197,7 +197,7 @@ export class LogicSim {
 		this.mouseMoveStart = null;
 
 		if (this.selection) {
-			this.selectedNodes = [];
+			this.selected = [];
 			let [x1, y1] = [this.selection.fromX, this.selection.fromY];
 			let [x2, y2] = [this.selection.toX, this.selection.toY];
 
@@ -221,9 +221,11 @@ export class LogicSim {
 				let nodeY2 = nodeY1 + node.height;
 
 				if (x1 < nodeX2 && x2 > nodeX1 && y1 < nodeY2 && y2 > nodeY1) {
-					this.selectedNodes.push(node);
+					this.selected.push({node});
 				}
 			}
+
+			// TODO: add link selectables here too
 
 			this.selection = null;
 			this.requestFrame();
@@ -244,22 +246,24 @@ export class LogicSim {
 		if (
 			buttons == 1 && this.selection == null &&
 			this.mouseMoveStart != null && this.currentLink == null) {
-			if (this.mouseMoveStart.node == null) {
+			if (this.mouseMoveStart.sel == null) {
 				this.x -= movementX / this.scale;
 				this.y -= movementY / this.scale;
 				this.requestFrame();
 			} else {
-				let nodeDX = Math.round(dx);
-				let nodeDY = Math.round(dy);
+				let selDX = Math.round(dx);
+				let selDY = Math.round(dy);
 
-				if (nodeDX != 0 || nodeDY != 0) {
+				if (selDX != 0 || selDY != 0) {
 					this.clickCancelled = true;
-					this.mouseMoveStart.x += nodeDX;
-					this.mouseMoveStart.y += nodeDY;
+					this.mouseMoveStart.x += selDX;
+					this.mouseMoveStart.y += selDY;
 
-					for (let node of this.selectedNodes) {
-						node.x += nodeDX;
-						node.y += nodeDY;
+					for (let sel of this.selected) {
+						if (sel.node) {
+							sel.node.x += selDX;
+							sel.node.y += selDY;
+						} // TODO: else link
 					}
 
 					this.requestFrame();
@@ -267,10 +271,10 @@ export class LogicSim {
 			}
 		}
 
-		let node = this.getNodeAt(x, y);
+		let sel = this.getSelectableAt(x, y);
 		let io = null;
-		if (node != null) {
-			io = this.getNodeIOAt(node, x, y);
+		if (sel != null && sel.node != null) {
+			io = this.getNodeIOAt(sel.node, x, y);
 		}
 
 		if (io == null && this.tooltip == null) {
@@ -323,10 +327,10 @@ export class LogicSim {
 			return;
 		}
 
-		let node = this.getNodeAt(x, y);
+		let sel = this.getSelectableAt(x, y);
 		let io = null;
-		if (node != null) {
-			io = this.getNodeIOAt(node, x, y);
+		if (sel != null && sel.node != null) {
+			io = this.getNodeIOAt(sel.node, x, y);
 		}
 
 		if (this.currentLink != null) {
@@ -337,7 +341,7 @@ export class LogicSim {
 					this.currentLink.path.reverse();
 					io.io.link.connect(fromNode, fromIO.index, this.currentLink.path);
 				} else if (fromIO.type == "output" && io.type == "input") {
-					fromIO.io.link.connect(node, io.index, this.currentLink.path);
+					fromIO.io.link.connect(sel.node, io.index, this.currentLink.path);
 				}
 
 				if (fromIO.type != io.type) {
@@ -350,10 +354,10 @@ export class LogicSim {
 				this.requestFrame();
 			}
 		} else if (io != null) {
-			this.currentLink = {from: {node, io}, path: []};
+			this.currentLink = {from: {node: sel.node, io}, path: []};
 		} else {
-			if (node && node.activate) {
-				node.activate();
+			if (sel && sel.node && sel.node.activate) {
+				sel.node.activate();
 				this.requestFrame();
 			}
 		}
@@ -374,6 +378,12 @@ export class LogicSim {
 		this.nodes.splice(this.nodes.indexOf(node), 1);
 	}
 
+	deleteSelectable(sel) {
+		if (sel.node) {
+			this.deleteNode(sel.node);
+		} // TODO: else deleteLink
+	}
+
 	coordsFromScreenPos(screenX, screenY) {
 		return [
 			(screenX - this.can.offsetWidth / 2) / this.scale + this.x,
@@ -381,7 +391,19 @@ export class LogicSim {
 		];
 	}
 
-	getNodeAt(x, y) {
+	getSelectedFrom(sel) {
+		for (let s of this.selected) {
+			if (s.node && sel.node && s.node == sel.node) {
+				return s;
+			} else if (s.link && sel.link && s.link == sel.link) {
+				return s;
+			}
+		}
+
+		return sel;
+	}
+
+	getSelectableAt(x, y) {
 		for (let i = this.nodes.length - 1; i >= 0; --i) {
 			let node = this.nodes[i];
 			let nodeX1 = node.x - 0.5;
@@ -392,9 +414,11 @@ export class LogicSim {
 			if (
 				x >= nodeX1 && x <= nodeX2 &&
 				y >= nodeY1 && y <= nodeY2) {
-				return node;
+				return this.getSelectedFrom({node});
 			}
 		}
+
+		// TODO: Loop over links
 
 		return null;
 	}
@@ -514,9 +538,13 @@ export class LogicSim {
 		this.ctx.strokeStyle = "rgba(255, 255, 255, 1)";
 		this.ctx.lineWidth = 0.05;
 		this.ctx.setLineDash([0.2, 0.1]);
-		for (let node of this.selectedNodes) {
-			this.ctx.beginPath();
-			this.ctx.strokeRect(node.x - 0.1, node.y - 0.5 - 0.1, node.width + 0.2, node.height + 0.2);
+		for (let sel of this.selected) {
+			if (sel.node) {
+				this.ctx.beginPath();
+				this.ctx.strokeRect(
+					sel.node.x - 0.1, sel.node.y - 0.5 - 0.1,
+					sel.node.width + 0.2, sel.node.height + 0.2);
+			} // TODO: else sel.link
 		}
 		this.ctx.lineWidth = 0.1;
 		this.ctx.setLineDash([]);
