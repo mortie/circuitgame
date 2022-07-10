@@ -20,10 +20,12 @@
 
 	function route() {
 		let path = location.hash.substr(1);
+		if (path == "") {
+			path = "/";
+		}
+
 		if (path[0] != "/") {
 			console.error("Illegal path:", path);
-			path = "/";
-		} else if (path == "") {
 			path = "/";
 		}
 
