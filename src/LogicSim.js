@@ -1,3 +1,50 @@
+function serialize(nodes) {
+	// Create 'linkToId' and 'links'; 'links' is an array of
+	// links, 'linkToId' maps a link to its index in 'links'
+	let linkToId = new Map();
+	let links = [];
+	for (let node of nodes) {
+		for (let output of node.outputs) {
+			linkToId.set(output.link, links.length);
+			links.push(output.link);
+		}
+	}
+
+	// Create 'nodeToId', which maps a node to its index in 'nodes'
+	let nodeToId = new Map();
+	for (let id = 0; id < nodes.length; ++id) {
+		nodeToId.set(nodes[id], id);
+	}
+
+	let serializedLinks = links.map(link => ({
+		fromNodeId: nodeToId.get(link.from),
+		index: link.index,
+		currentState: link.current,
+		nextState: link.next,
+		connections: link.connections.map(conn => ({
+			nodeId: nodeToId.get(conn.node),
+			index: conn.index,
+			path: conn.path.map(point => [point.x, point.y]),
+		})),
+	}));
+
+	let serializedNodes = nodes.map(node => ({
+		className: node.constructor.name,
+		name: node.name,
+		protected: node.protected,
+		x: node.x, y: node.y,
+		width: node.width, height: node.height,
+		inputs: node.inputs.map(input => input.links.map(link => linkToId.get(link))),
+		outputs: node.outputs.map(output => linkToId.get(output.link)),
+		meta: node.meta ? node.meta() : null,
+	}));
+
+	return {
+		links: serializedLinks,
+		nodes: serializedNodes,
+	};
+}
+
 export class LogicSim {
 	constructor(can) {
 		this.scale = 40;
@@ -107,6 +154,10 @@ export class LogicSim {
 		});
 	}
 
+	serialize() {
+		return serialize(this.nodes);
+	}
+
 	addListener(obj, evt, fn) {
 		this.listenersToDestroy.push([obj, evt, fn]);
 		obj.addEventListener(evt, fn);
@@ -114,7 +165,6 @@ export class LogicSim {
 
 	destroy() {
 		for (let [obj, evt, fn] of this.listenersToDestroy) {
-			console.log(obj, "removeEventListener", evt, fn);
 			obj.removeEventListener(evt, fn);
 		}
 	}
